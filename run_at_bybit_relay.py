@@ -181,7 +181,7 @@ if __name__ == "__main__":
     while True:
         logger.info("starting another check for new orders...")
 
-        new_orders, old_orders = OrderUtil.get_new_orders(API_KEY, EXCHANGE, logger)
+        new_orders, old_orders = OrderUtil.get_new_orders(API_KEY, logger, exchange=EXCHANGE)
 
         if new_orders is not None:
             for new_order in new_orders:

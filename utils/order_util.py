@@ -89,7 +89,7 @@ class OrderUtil:
         return flattened_order_map, unique_order_uuids
 
     @staticmethod
-    def get_new_orders(api_key, exchange, logger):
+    def get_new_orders(api_key, logger, exchange=""):
         response = OrderUtil.get_new_miner_positions(api_key)
 
         # Check if the request was successful (status code 200)
