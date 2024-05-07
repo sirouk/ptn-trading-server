@@ -4,9 +4,22 @@ import logging
 
 
 class LoggerUtil:
+    """
+    Initializes a logger with specified settings.
+
+    Returns:
+        logging.Logger: The initialized logger.
+    """
 
     @staticmethod
     def init_logger():
+        """
+        Initializes a logger with specified settings.
+
+        Returns:
+            logging.Logger: The initialized logger.
+        """
+
         # Create a logger
         logger = logging.getLogger("example_logger")
 
