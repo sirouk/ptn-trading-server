@@ -1,22 +1,19 @@
 # Copyright © 2024 Taoshi Inc (edits by sirouk)
 
+import http.client
+import json
 import os
+import ssl
+from datetime import datetime, timezone
 
 # Load environment variables
 from dotenv import load_dotenv
 
-load_dotenv()
-
-import json
-import http.client
-import ssl
-
 from utils.logger_util import LoggerUtil
 from utils.order_util import OrderUtil
 from utils.time_util import TimeUtil
-from datetime import datetime, timezone
 
-
+load_dotenv()
 # Initialize the logger
 logger = LoggerUtil.init_logger()
 
