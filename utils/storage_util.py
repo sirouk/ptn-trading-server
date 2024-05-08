@@ -7,11 +7,6 @@ from typing import Union
 
 
 class StorageUtil:
-    """
-    Utility class for handling storage-related operations.
-
-    Includes methods for creating directories, writing data to files, reading data from files, and determining file read/write types.
-    """
 
     @staticmethod
     def make_dir(d: str) -> None:
