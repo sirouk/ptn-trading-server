@@ -11,16 +11,6 @@ RUN_SLEEP_TIME = 60
 
 
 def get_new_miner_order(_flattened_order):
-    """
-    Extracts relevant information from a flattened order to create a payload for a new miner order.
-
-    Args:
-        _flattened_order (dict): The flattened order data.
-
-    Returns:
-        str: The payload containing the extracted order information.
-    """
-
     order_position_type = _flattened_order["position_type"]
     order_position_net_leverage = _flattened_order["net_leverage"]
     order_trade_pair = _flattened_order["trade_pair"]
@@ -47,15 +37,6 @@ def get_new_miner_order(_flattened_order):
 
 
 def send_new_miner_order(_new_order, logger, add_sleep=True):
-    """
-    Sends a new miner order message using the provided order data and logger, optionally adding a standardized sleep time.
-
-    Args:
-        _new_order (dict): The new miner order data.
-        logger: The logger instance for logging messages.
-        add_sleep (bool, optional): Whether to add a standardized sleep time. Defaults to True.
-    """
-
     nmo = get_new_miner_order(_new_order)
     TGBot().send_message(nmo, logger)
     if add_sleep:

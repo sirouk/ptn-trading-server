@@ -6,11 +6,6 @@ from typing import List, Tuple
 
 
 class TimeUtil:
-    """
-    Utility class for time-related operations.
-
-    Includes methods for generating timestamps, converting timestamps to milliseconds, and handling time-related calculations and sleep operations.
-    """
 
     @staticmethod
     def generate_start_timestamp(days: int) -> datetime:
@@ -47,15 +42,6 @@ class TimeUtil:
 
     @staticmethod
     def sleeper(sleeper_time, subject, logger):
-        """
-        Suspends execution for a specified time period.
-
-        Args:
-            sleeper_time: The time in seconds to sleep.
-            subject: The subject for which the sleeper is called.
-            logger: The logger instance for logging messages.
-        """
-
         logger.debug(f"sleeper called for [{subject}]...")
         time.sleep(sleeper_time)
         logger.debug(f"sleeper done for [{subject}].")

@@ -13,12 +13,6 @@ from utils.time_util import TimeUtil
 
 
 class OrderUtil:
-    """
-    Utility class for handling order-related operations.
-
-    Includes methods for retrieving current miner positions, getting new miner positions, creating a flattened order map, and calculating total leverage by position type.
-    """
-
     # URL = "http://127.0.0.1:80/miner-positions"
     URL = os.getenv("MINER_POSITIONS_ENDPOINT_URL")
 
@@ -30,16 +24,6 @@ class OrderUtil:
 
     @staticmethod
     def get_current_miner_positions(exchange=""):
-        """
-        Retrieves the current miner positions data for the specified exchange.
-
-        Args:
-            exchange (str, optional): The exchange for which the miner positions data is retrieved. Defaults to "".
-
-        Returns:
-            dict: The current miner positions data, or None if the data is not found.
-        """
-
         try:
             miner_positions_data = StorageUtil.get_file(OrderUtil.MINER_POSITION_LOCATION + "_" + exchange + ".json")
             miner_positions_data = json.loads(miner_positions_data)
@@ -49,16 +33,6 @@ class OrderUtil:
 
     @staticmethod
     def get_new_miner_positions(api_key):
-        """
-        Retrieves new miner positions using the provided API key.
-
-        Args:
-            api_key (str): The API key for accessing the miner positions.
-
-        Returns:
-            requests.Response: The response object from the GET request.
-        """
-
         # Pass API key
         data = {"api_key": api_key}
         # Convert the Python dictionary to JSON format
@@ -72,16 +46,6 @@ class OrderUtil:
 
     @staticmethod
     def get_flattened_order_map(data):
-        """
-        Creates a flattened order map and a set of unique order UUIDs based on the provided data.
-
-        Args:
-            data (dict): The data containing positions and orders.
-
-        Returns:
-            tuple: A tuple containing the flattened order map and a set of unique order UUIDs.
-        """
-
         flattened_order_map = {}
         unique_order_uuids = set()
 
@@ -126,18 +90,6 @@ class OrderUtil:
 
     @staticmethod
     def get_new_orders(api_key, logger, exchange=""):
-        """
-        Retrieves new orders based on the provided API key and exchange.
-
-        Args:
-            api_key (str): The API key for accessing the orders.
-            logger: The logger instance for logging messages.
-            exchange (str, optional): The exchange for which the orders are retrieved. Defaults to "".
-
-        Returns:
-            tuple: A tuple containing lists of new orders and old orders.
-        """
-
         response = OrderUtil.get_new_miner_positions(api_key)
 
         # Check if the request was successful (status code 200)
@@ -190,19 +142,6 @@ class OrderUtil:
 
     @staticmethod
     def total_leverage_by_position_type(position_uuid, rank_gradient_allocation, rank_override, exchange, logger):
-        """
-        Calculates the total leverage for a given position type based on the provided parameters.
-
-        Args:
-            position_uuid (str): The unique identifier of the position.
-            rank_gradient_allocation (dict): A dictionary mapping rank to trade allocation values.
-            rank_override (str): The rank override value.
-            exchange: The exchange for which the calculation is performed.
-            logger: The logger instance for logging messages.
-
-        Returns:
-            dict: A dictionary containing the total leverage for "LONG" and "SHORT" positions.
-        """
 
         total_leverage = {"LONG": 0.0, "SHORT": 0.0}
 
