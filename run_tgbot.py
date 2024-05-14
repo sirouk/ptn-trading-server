@@ -62,7 +62,17 @@ def send_new_miner_order(_new_order, logger, add_sleep=True):
         TimeUtil.sleeper(5, "new_miner_order", logger)
 
 
-if __name__ == "__main__":
+def main():
+    """
+    Executes the main loop for checking new orders, processing them, and completing requests.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
     logger = LoggerUtil.init_logger()
     while True:
         logger.info("starting another check for new orders...")
@@ -71,3 +81,8 @@ if __name__ == "__main__":
             for new_order in new_orders:
                 send_new_miner_order(new_order, logger)
         TimeUtil.sleeper(RUN_SLEEP_TIME, "completed request", logger)
+
+
+if __name__ == "__main__":
+
+    main()
