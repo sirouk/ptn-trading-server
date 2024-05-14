@@ -27,6 +27,6 @@ class TGBot:
 
         payload_json = {"chat_id": self._chat_id, "parse_mode": "HTML", "text": payload}
 
-        return_message = requests.post(self._send_url, json=payload_json)
+        return_message = requests.post(self._send_url, json=payload_json, timeout=500)
         logger.info(str(return_message))
         return self
