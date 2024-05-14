@@ -1,10 +1,9 @@
 # Copyright © 2024 Taoshi Inc
 
+from tgbot import TGBot
 from utils.logger_util import LoggerUtil
 from utils.order_util import OrderUtil
-from tgbot import TGBot
 from utils.time_util import TimeUtil
-
 
 API_KEY = "xxxx"
 RUN_SLEEP_TIME = 60

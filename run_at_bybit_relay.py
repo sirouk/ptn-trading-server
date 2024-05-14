@@ -1,22 +1,19 @@
 # Copyright © 2024 Taoshi Inc (edits by sirouk)
 
+import http.client
+import json
 import os
+import ssl
+from datetime import datetime, timezone
 
 # Load environment variables
 from dotenv import load_dotenv
 
-load_dotenv()
-
-import json
-import http.client
-import ssl
-
 from utils.logger_util import LoggerUtil
 from utils.order_util import OrderUtil
 from utils.time_util import TimeUtil
-from datetime import datetime, timezone
 
-
+load_dotenv()
 # Initialize the logger
 logger = LoggerUtil.init_logger()
 
@@ -169,11 +166,17 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
     return response
 
 
-if __name__ == "__main__":
-    # to be named: Taoshi SN8 - Dale @ Bybit'
-    secrets = get_secrets()
+def main() -> None:
+    """
+    Main function for processing new orders, calculating gradient allocation, and sending orders to Bybit.
 
-    # Calculate the gradient allocation for each rank
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
     logger.info(f"Calculating gradient allocation for ranks 1 to {MAX_RANK}...")
     rank_gradient_allocation = calculate_gradient_allocation(MAX_RANK)
     logger.info(rank_gradient_allocation)
@@ -181,13 +184,12 @@ if __name__ == "__main__":
     while True:
         logger.info("starting another check for new orders...")
 
-        new_orders, old_orders = OrderUtil.get_new_orders(API_KEY, logger, exchange=EXCHANGE)
+        new_orders, _old_orders = OrderUtil.get_new_orders(API_KEY, logger, exchange=EXCHANGE)
 
         if new_orders is not None:
             for new_order in new_orders:
                 # print(new_order)
                 # quit()
-
                 # if (new_order["rank"] <= MAX_RANK or new_order["muid"] == top_miner_uid) and abs(new_order["leverage"]) <= MAX_LEVERAGE:
                 # if new_order["muid"] == top_miner_uid:
                 # Initialize market and muid as None
@@ -205,7 +207,6 @@ if __name__ == "__main__":
 
                 # Check if a market and muid were found
                 if market is not None and new_order["muid"] == order_muid and muid_rank > 0 and muid_rank <= MAX_RANK:
-
                     # Skip if the order is already a FLAT position as it is old news
                     if new_order["position_type"] == "FLAT" and new_order["order_type"] != "FLAT":
                         logger.info(f"Skipping order [{new_order['order_uuid']}] as it is already a FLAT position!")
@@ -228,3 +229,11 @@ if __name__ == "__main__":
                     # quit()
 
         TimeUtil.sleeper(RUN_SLEEP_TIME, "completed request", logger)
+
+
+if __name__ == "__main__":
+    # to be named: Taoshi SN8 - Dale @ Bybit'
+    SECRETS = get_secrets()
+
+    # Calculate the gradient allocation for each rank
+    main()
