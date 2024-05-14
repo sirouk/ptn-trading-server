@@ -42,6 +42,16 @@ def get_secrets():
 
 
 def calculate_gradient_allocation(max_rank):
+    """
+    Calculates the gradient allocation for each rank based on the maximum rank value.
+
+    Args:
+        max_rank (int): The maximum rank value for calculation.
+
+    Returns:
+        dict: A dictionary containing the gradient allocation for each rank.
+    """
+
     # Calculate the gradient allocation for each rank with lower ranks (higher priority) receiving larger portions.
 
     # Calculate the total weight by summing the inverted rank values
@@ -59,6 +69,19 @@ def calculate_gradient_allocation(max_rank):
 
 
 def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
+    """
+    Sends an order to Bybit based on the provided market, order details, rank gradient allocation, and timestamp.
+
+    Args:
+        market (str): The market symbol.
+        order (dict): The order details.
+        rank_gradient_allocation (dict): A dictionary mapping rank to trade allocation values.
+        timestamp_utc (datetime): The timestamp in UTC.
+
+    Returns:
+        http.client.HTTPResponse: The response from the Bybit relay.
+    """
+
     # Prepare order information
     bybit_order = {
         "symbol": market.upper(),
