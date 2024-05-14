@@ -26,11 +26,12 @@ MAX_RANK = 1
 CONTINUOUS_TRADE_MODE = False
 USE_PAIR_MAP_RANK = True
 
-# current infra only works for one miner at a time
-# needs adjusted logic to work for every one as you'll have conflicting positions
-# UPDATE: working on a solution to handle multiple miners
+#  Current infra only works for one miner at a time
+#  Needs adjusted logic to work for every one as you'll have conflicting positions
+#  UPDATE: working on a solution to handle multiple miners
 #  CONTINUOUS_TRADE_MODE was an attempt at this, but the flaw was shifting rank and no local taken position cache
-#  The next solution would be to pass the muid to the bybit layer and keep positions separately with an ID based apprroch, which would allow this to manage multiple positions per asset pair and thererfore multiple miners
+#  The next solution would be to pass the muid to the bybit layer and keep positions separately with an ID based approach,
+#  this would allow this to manage multiple positions per asset pair and thererfore multiple miners
 pair_map_json = os.getenv("PAIR_MAP")
 pair_map = json.loads(pair_map_json)
 logger.info(f"Pair map:\n{pair_map_json}")

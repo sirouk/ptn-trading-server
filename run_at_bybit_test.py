@@ -188,9 +188,10 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
     return response
 
 
-if __name__ == "__main__":
-    # to be named: Taoshi SN8 - Dale @ Bybit'
-    secrets = get_secrets()
+def main() -> None:
+    """
+    Executes the main trading logic including calculating gradient allocation, processing orders, and handling trade operations.
+    """
 
     # Calculate the gradient allocation for each rank
     logger.info(f"Calculating gradient allocation for ranks 1 to {MAX_RANK}...")
@@ -202,91 +203,92 @@ if __name__ == "__main__":
 
         new_orders, old_orders = OrderUtil.get_new_orders(API_KEY, logger, exchange=EXCHANGE)
 
-        if True:
+        # Aggregate the account allocation and leverage
+        queued_order = {}
 
-            # Aggregate the account allocation and leverage
-            queued_order = {}
+        # Combine the new and old orders
+        all_orders = []
+        if old_orders:
+            all_orders += old_orders
+        if new_orders:
+            all_orders += new_orders
 
-            # Combine the new and old orders
-            all_orders = []
-            if old_orders:
-                all_orders += old_orders
-            if new_orders:
-                all_orders += new_orders
+        for order in all_orders:
+            # Skip if the order is already a FLAT position
+            if order["position_type"] == "FLAT" and order["order_type"] != "FLAT":
+                # logger.info(f"Skipping order [{order['order_uuid']}] as it is already a FLAT position!")
+                continue
 
-            for order in all_orders:
+            if order["position_type"] != "FLAT" and order["order_type"] == "FLAT":
+                logger.info(f"Non-Flat Position with Flat Order Type: {order}")
+                quit()
 
-                # Skip if the order is already a FLAT position
-                if order["position_type"] == "FLAT" and order["order_type"] != "FLAT":
-                    # logger.info(f"Skipping order [{order['order_uuid']}] as it is already a FLAT position!")
-                    continue
+            # print(order)
+            # quit()
 
-                if order["position_type"] != "FLAT" and order["order_type"] == "FLAT":
-                    logger.info(f"Non-Flat Position with Flat Order Type: {order}")
+            market, max_rank, allocations = None, None, None
+
+            # Iterate through each element in the trade_pair list
+            for trade_pair_element in order["trade_pair"]:
+                if pair_info := pair_map.get(trade_pair_element):
+                    exchange = pair_info.get("exchange", "")
+                    if exchange == EXCHANGE:
+                        market = pair_info["ticker"]
+                        max_rank = pair_info.get("max_rank", None)
+                        allocations = pair_info.get("allocations", None)
+                        break
+
+            # Check to see if muid is in the allocated muid list
+            if market and max_rank and (order["muid"] in allocations or order["rank"] in range(1, max_rank)):
+                # if net leverage is positive, set the multiplier to 1, otherwise -1
+                # if order["order_type"] == "FLAT":
+                # 	if order["position_type"] == "LONG":
+                # 		order["leverage"] = 1
+                direction = order["order_type"]  # LONG, SHORT, FLAT
+
+                # Prepare the order
+                if not queued_order.get(market):
+                    queued_order[market] = {
+                        "LONG": {"allocation": {}},
+                        "SHORT": {"allocation": {}},
+                        "FLAT": {"allocation": {}},
+                        "timestamp_utc": datetime.fromtimestamp(order["processed_ms"] / 1000, timezone.utc),
+                    }
+
+                # Size of the trade for each Long and Short positions
+                if order["muid"] in allocations:
+                    # Use the static muid allocation
+                    queued_order[market][direction]["allocation"][order["muid"]] = allocations[order["muid"]]
+                else:
+                    # Use the rank to calculate the allocation
+                    rank_gradient_allocation = calculate_gradient_allocation(max_rank)
+                    trade_numerator, trade_denominator = rank_gradient_allocation[order["rank"]]
+
+                    # print the numerator and denominator
+                    logger.info(f"Rank: {order['rank']}, Numerator: {trade_numerator}, Denominator: {trade_denominator}")
+
+                    queued_order[market][direction]["allocation"][order["muid"]] = trade_numerator / trade_denominator
+                    print(queued_order)
                     quit()
 
-                # print(order)
+                # convert processed_ms to a timestamp in UTC
+                # if queued order is long and has an allocation with a sum greater than one
+                if direction == "LONG" and sum(queued_order[market][direction]["allocation"].values()) > 1:
+                    logger.info(queued_order)
+                    quit()
+                    # continue
+
+                # Proceed with your logic, since a valid market was found
+                logger.info(f"New trade to process: {queued_order}")
+
+                TimeUtil.sleeper(1, "sent order", logger)
                 # quit()
 
-                market, max_rank, allocations = None, None, None
-
-                # Iterate through each element in the trade_pair list
-                for trade_pair_element in order["trade_pair"]:
-
-                    pair_info = pair_map.get(trade_pair_element)
-                    if pair_info:
-                        exchange = pair_info.get("exchange", "")
-                        if exchange == EXCHANGE:
-                            market = pair_info["ticker"]
-                            max_rank = pair_info.get("max_rank", None)
-                            allocations = pair_info.get("allocations", None)
-                            break
-
-                # Check to see if muid is in the allocated muid list
-                if market and max_rank and (order["muid"] in allocations or order["rank"] in range(1, max_rank)):
-
-                    # if net leverage is positive, set the multiplier to 1, otherwise -1
-                    # if order["order_type"] == "FLAT":
-                    # 	if order["position_type"] == "LONG":
-                    # 		order["leverage"] = 1
-                    direction = order["order_type"]  # LONG, SHORT, FLAT
-
-                    # Prepare the order
-                    if not queued_order.get(market):
-                        queued_order[market] = {
-                            "LONG": {"allocation": {}},
-                            "SHORT": {"allocation": {}},
-                            "FLAT": {"allocation": {}},
-                            "timestamp_utc": datetime.fromtimestamp(order["processed_ms"] / 1000, timezone.utc),
-                        }
-
-                    # Size of the trade for each Long and Short positions
-                    if order["muid"] in allocations:
-                        # Use the static muid allocation
-                        queued_order[market][direction]["allocation"][order["muid"]] = allocations[order["muid"]]
-                    else:
-                        # Use the rank to calculate the allocation
-                        rank_gradient_allocation = calculate_gradient_allocation(max_rank)
-                        trade_numerator, trade_denominator = rank_gradient_allocation[order["rank"]]
-
-                        # print the numerator and denominator
-                        logger.info(f"Rank: {order['rank']}, Numerator: {trade_numerator}, Denominator: {trade_denominator}")
-
-                        queued_order[market][direction]["allocation"][order["muid"]] = trade_numerator / trade_denominator
-                        print(queued_order)
-                        quit()
-
-                    # convert processed_ms to a timestamp in UTC
-                    # if queued order is long and has an allocation with a sum greater than one
-                    if direction == "LONG" and sum(queued_order[market][direction]["allocation"].values()) > 1:
-                        logger.info(queued_order)
-                        quit()
-                        # continue
-
-                    # Proceed with your logic, since a valid market was found
-                    logger.info(f"New trade to process: {queued_order}")
-
-                    TimeUtil.sleeper(1, "sent order", logger)
-                    # quit()
-
         TimeUtil.sleeper(RUN_SLEEP_TIME, "completed request", logger)
+
+
+if __name__ == "__main__":
+    # to be named: Taoshi SN8 - Dale @ Bybit'
+    secrets = get_secrets()
+
+    main()
