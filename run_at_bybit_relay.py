@@ -95,7 +95,26 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
 	
 	
 	# Interpret the order type
-	if order["order_type"] == "LONG":
+	if order["order_type"] == "FLAT" or leverage_sum == 0:
+
+		# We do not send flat orders to Bybit, instead we send the opposite order proprtionate to the leverage
+		# Override Direction
+		if leverage_sum > 0:
+			if CONTINUOUS_TRADE_MODE:
+				order["order_type"] = "SHORT"
+			bybit_order["action"] = "sell"
+		else:
+			if CONTINUOUS_TRADE_MODE:
+				order["order_type"] = "LONG"
+			bybit_order["action"] = "buy"
+		
+		# Flip leverage sum to negate the position
+		order["leverage"] = leverage_sum * -1
+		
+		# This method is already adjusted for ranked allocation
+		trade_numerator = order["leverage"]
+
+	elif order["order_type"] == "LONG":
 
 		bybit_order["action"] = "buy"	
 		# align leverage with direction	
@@ -112,26 +131,6 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
 		
 		# Trade size uses ranked allocation
 		trade_numerator *= order["leverage"]
-
-	elif order["order_type"] == "FLAT":
-
-		# We do not send flat orders to Bybit, instead we send the opposite order proprtionate to the leverage
-		
-		# Override Direction
-		if leverage_sum > 0:
-			if CONTINUOUS_TRADE_MODE:
-				order["order_type"] = "SHORT"
-			bybit_order["action"] = "sell"
-		else:
-			if CONTINUOUS_TRADE_MODE:
-				order["order_type"] = "LONG"
-			bybit_order["action"] = "buy"
-		
-		# Flip leverage sum to negate the position
-		order["leverage"] = leverage_sum * -1
-		
-		# This method is already adjusted for ranked allocation
-		trade_numerator = order["leverage"]
 	
 
 	# Order Direction
