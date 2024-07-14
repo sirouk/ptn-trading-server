@@ -68,6 +68,7 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
 		"direction": "",
 		"action": "",
 		"leverage": f"{POSITION_LEVERAGE}",  # Assuming leverage is an integer value
+		"leverage_sum": "0",
 		"size": "",
 		"priority": "high",
 		"takeprofit": "0.0",
@@ -82,8 +83,16 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
 	# Calculate the trade size
 	trade_numerator, trade_denominator = rank_gradient_allocation[order["rank"]]
 
-	
 
+	# Determine how much leverage was used
+	if USE_PAIR_MAP_RANK:
+		position_leverage = OrderUtil.total_leverage_by_position_type(order["position_uuid"], rank_gradient_allocation, order["rank"], EXCHANGE, logger)
+	else:
+		position_leverage = OrderUtil.total_leverage_by_position_type(order["position_uuid"], rank_gradient_allocation, None, EXCHANGE, logger)
+
+	leverage_sum = position_leverage["LONG"] + position_leverage["SHORT"]
+	order["leverage_sum"] = leverage_sum
+	
 	
 	# Interpret the order type
 	if order["order_type"] == "LONG":
@@ -107,13 +116,7 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
 	elif order["order_type"] == "FLAT":
 
 		# We do not send flat orders to Bybit, instead we send the opposite order proprtionate to the leverage
-		if USE_PAIR_MAP_RANK:
-			position_leverage = OrderUtil.total_leverage_by_position_type(order["position_uuid"], rank_gradient_allocation, order["rank"], EXCHANGE, logger)
-		else:
-			position_leverage = OrderUtil.total_leverage_by_position_type(order["position_uuid"], rank_gradient_allocation, None, EXCHANGE, logger)
-
-		leverage_sum = position_leverage["LONG"] + position_leverage["SHORT"]
-
+		
 		# Override Direction
 		if leverage_sum > 0:
 			if CONTINUOUS_TRADE_MODE:
