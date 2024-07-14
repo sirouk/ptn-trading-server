@@ -68,7 +68,7 @@ def send_to_bybit(market, order, rank_gradient_allocation, timestamp_utc):
 		"direction": "",
 		"action": "",
 		"leverage": f"{POSITION_LEVERAGE}",  # Assuming leverage is an integer value
-		"leverage_sum": "0",
+		"leverage_sum": "0.0",
 		"size": "",
 		"priority": "high",
 		"takeprofit": "0.0",
