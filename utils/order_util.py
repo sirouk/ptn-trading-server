@@ -27,8 +27,13 @@ class OrderUtil:
 	def get_current_miner_positions(exchange = ""):
 		try:
 			miner_positions_data = StorageUtil.get_file(OrderUtil.MINER_POSITION_LOCATION + "_" + exchange + ".json")
-			miner_positions_data = json.loads(miner_positions_data)
-		except FileNotFoundError:
+			# Check if the file is empty or not valid JSON
+			if miner_positions_data and miner_positions_data.strip():
+				miner_positions_data = json.loads(miner_positions_data)
+			else:
+				# If the file is empty, return None
+				miner_positions_data = None
+		except (FileNotFoundError, json.JSONDecodeError):
 			miner_positions_data = None
 		return miner_positions_data
 
